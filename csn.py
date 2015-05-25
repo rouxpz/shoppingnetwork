@@ -7,6 +7,7 @@ from bs4 import BeautifulSoup
 import re
 import glob
 from Tkinter import *
+from PIL import Image, ImageTk
 
 
 def openPage(url):
@@ -62,17 +63,20 @@ print(selection.id)
 raw = openPage(selection.id)
 getImages(raw)
 
+print title
+print summary
 
-root = Tk()
+canvas = Canvas(width=960, height=540, bg="black")
+canvas.pack(expand = YES, fill = BOTH)
 
-photo = PhotoImage(file='0.jpg')
-canvas = Canvas(width=1920/2, height=1080/2)
-canvas.create_image(0, 0, image = photo)
+PILFile = Image.open('0.jpg')
+photo = ImageTk.PhotoImage(PILFile)
+label = Label(image=photo)
+label.image = photo # keep a reference!
 
-root.mainloop()
+canvas.create_image(960/2, 540/2, image = photo)
+
+mainloop()
 
 # s = 'say ' + summary
 # system(s)
-
-print title
-print summary
