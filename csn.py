@@ -6,9 +6,10 @@ import urllib2
 from bs4 import BeautifulSoup
 import re
 import glob
-from Tkinter import *
-from PIL import Image, ImageTk
+import threading
 
+home_path = os.getcwd()
+print home_path
 
 def openPage(url):
 
@@ -21,7 +22,7 @@ def openPage(url):
 
 def getImages(soup):
 
-	path = 'data/'
+	path = 'csn_processing/data/'
 	os.chdir(path)
 	files = glob.glob('*.jpg')
 	for f in files:
@@ -47,36 +48,49 @@ def getImages(soup):
 
 		counter += 1
 
-f = feedparser.parse("https://newyork.craigslist.org/search/sss?format=rss")
+def getFullDescription(soup):
+	text = soup.find_all(id="postingbody")
+	desc = str(text[0]).replace('<section id="postingbody">', '').replace('</section>', '').replace('<br/>', '').replace('"', ' inches').replace('&amp;', '&')
+	return desc
 
-select = randrange(len(f.entries))
+def collectEntry():
+	f = feedparser.parse("https://newyork.craigslist.org/search/sss?format=rss")
 
-selection = f.entries[select]
-# print selection
+	select = randrange(len(f.entries))
 
-title = unicode.encode(selection.title, "utf-8")
-summary = unicode.encode(selection.summary, "utf-8")
+	selection = f.entries[select]
+	# print selection
 
-title = title.split("&#x0024;")
+	title = unicode.encode(selection.title, "utf-8")
+	# summary = unicode.encode(selection.summary, "utf-8")
 
-print(selection.id)
-raw = openPage(selection.id)
-getImages(raw)
+	title = title.split("&#x0024;")
+	# summary = summary.lower()
 
-print title
-print summary
+	print(selection.id)
+	raw = openPage(selection.id)
+	getImages(raw)
+	summary = getFullDescription(raw)
 
-canvas = Canvas(width=960, height=540, bg="black")
-canvas.pack(expand = YES, fill = BOTH)
+	print title
+	# print summary
 
-PILFile = Image.open('0.jpg')
-photo = ImageTk.PhotoImage(PILFile)
-label = Label(image=photo)
-label.image = photo # keep a reference!
+	with open('data.txt', 'wb') as file_:
+		file_.write(title[0])
+		file_.write('\n')
+		file_.write(title[1])
+		file_.write('\n')
+		file_.write(summary)
+		file_.close()
 
-canvas.create_image(960/2, 540/2, image = photo)
+	os.chdir(home_path)
+	print os.getcwd()
 
-mainloop()
+	startTimer()
 
-# s = 'say ' + summary
-# system(s)
+def startTimer():
+	print "starting timer..."
+	t = threading.Timer(300.0, collectEntry)
+	t.start()
+
+collectEntry()
