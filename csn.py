@@ -8,8 +8,12 @@ import re
 import glob
 import threading
 
+#to do:
+#1 - extract email address
+#2 - skip posts without photos
+#3 - clean up any lingering HTML in the description
+
 home_path = os.getcwd()
-print home_path
 
 def openPage(url):
 
@@ -31,29 +35,49 @@ def getImages(soup):
 	counter = 0
 	images = soup.find_all("img")
 
-	for i in images:
-		link = str(i.get("src"))
-		link = link.replace("50x50c.jpg", "600x450.jpg")
-		print link
+	if len(images) > 1:
 
-		opener = urllib2.build_opener()
-		opener.addheaders = [('User-Agent', 'Mozilla/5.0')]
-		photo = opener.open(link)
+		for i in images:
+			if images.index(i) != 1:
+				link = str(i.get("src"))
+				link = link.replace("50x50c.jpg", "600x450.jpg")
+				print link
 
-		with open(str(counter) + '.jpg', 'wb') as file_:
-			file_.write(photo.read())
-			file_.close()
+				opener = urllib2.build_opener()
+				opener.addheaders = [('User-Agent', 'Mozilla/5.0')]
+				photo = opener.open(link)
 
-		opener.close()
+				with open(str(counter) + '.jpg', 'wb') as file_:
+					file_.write(photo.read())
+					file_.close()
 
-		counter += 1
+				opener.close()
+
+				counter += 1
+	else:
+		print "no images found"
+		collectEntry()
 
 def getFullDescription(soup):
 	text = soup.find_all(id="postingbody")
 	desc = str(text[0]).replace('<section id="postingbody">', '').replace('</section>', '').replace('<br/>', '').replace('"', ' inches').replace('&amp;', '&')
 	return desc
 
+def getContactInfo(_id):
+	link = "http://newyork.craigslist.org/reply/nyc/for/" + _id
+	opener = urllib2.build_opener()
+	opener.addheaders = [('User-Agent', 'Mozilla/5.0')]
+	contact = opener.open(link)
+	soup = BeautifulSoup(contact, from_encoding="utf-8")
+	opener.close()
+
+	email = soup.a.contents
+	return email[0]
+
 def collectEntry():
+	os.chdir(home_path)
+	print os.getcwd()
+
 	f = feedparser.parse("https://newyork.craigslist.org/search/sss?format=rss")
 
 	select = randrange(len(f.entries))
@@ -62,13 +86,24 @@ def collectEntry():
 	# print selection
 
 	title = unicode.encode(selection.title, "utf-8")
-	# summary = unicode.encode(selection.summary, "utf-8")
+	link = unicode.encode(selection.link, "utf-8")
+
+	if len(title) == 1:
+		title.append("???")
 
 	title = title.split("&#x0024;")
+	title[0] = title[0].replace('&amp;', '&')
 	# summary = summary.lower()
 
-	print(selection.id)
-	raw = openPage(selection.id)
+	r = re.findall(r'/[^/]*$', link)
+	_id = r[0].replace('/', '').replace('.html', '')
+
+	print _id
+	email = getContactInfo(_id)
+	print email
+
+	print(selection.link)
+	raw = openPage(selection.link)
 	getImages(raw)
 	summary = getFullDescription(raw)
 
@@ -79,6 +114,10 @@ def collectEntry():
 		file_.write(title[0])
 		file_.write('\n')
 		file_.write(title[1])
+		file_.write('\n')
+		file_.write(link)
+		file_.write('\n')
+		file_.write(email)
 		file_.write('\n')
 		file_.write(summary)
 		file_.close()
