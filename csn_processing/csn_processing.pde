@@ -281,7 +281,7 @@ void sendEmail(String phone) {
   sendEmailChoreo.setUsername("craigsshoppingnetwork@gmail.com");
   sendEmailChoreo.setPassword(gmailPassword);
   sendEmailChoreo.setFromAddress("CSN <craigsshoppingnetwork@gmail.com>");
-  sendEmailChoreo.setToAddress("roopakutty@gmail.com");
+  sendEmailChoreo.setToAddress(address);
 
   // Run the Choreo and store the results
   SendEmailResultSet sendEmailResults = sendEmailChoreo.run();
