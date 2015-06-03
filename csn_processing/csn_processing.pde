@@ -20,10 +20,10 @@ int startingTime = 0;
 int speakTimer = 0;
 
 int imageCounter = 0;
-int voiceCounter = 1;
+int voiceCounter;
 PImage currentImage;
 int w;
-float x, y;
+float x = 620;
 int scale;
 
 int totalResponses;
@@ -37,8 +37,8 @@ public void init() {
 
 void setup() {
   size(1280, 720);
-  // frame.setAlwaysOnTop(true);
-  frame.setLocation(1280, 0);
+  // frame.setAlwaysOnTop(true)
+  // frame.setLocation(1280, 0);
 
   //load temboo info and start session
   String[] tembooInfo = loadStrings("temboo-info.txt");
@@ -69,7 +69,7 @@ void setup() {
   voiceover[3] = "Hurry, limited time offer";
   voiceover[4] = "Something like this doesn't come along every day";
 
-  voiceCounter = 1;
+  voiceCounter = 4;
 
   totalResponses = getTotalMessages();
   println(totalResponses);
@@ -88,7 +88,7 @@ void draw() {
 
   if (images.size() > 0) {
     imageMode(CENTER);
-    image(currentImage, x, y);
+    image(currentImage, x, height/2);
   }
 
   imageMode(CORNER);
@@ -125,21 +125,20 @@ void loadData() {
   address = data[3];
   description = data[5];
 
-  // if (data.length > 5) {
-  //   for (int i = 3; i < data.length; i++) {
-  //     description = description + " " + data[i];
-  //   }
-  // }
-  println(title);
-  println(description);
+  if (data.length > 5) {
+    for (int i = 6; i < data.length; i++) {
+      description = description + " " + data[i];
+    }
+  }
+
+  voiceover[0] = description;
+
+  // println(title);
+  // println(description);
 
   int itemNumber = round(random(9999));
   serial = "CSN-" + nf(itemNumber, 4, 0);
   println("serial number: " + serial);
-
-  x = 620;
-  y = height/2;
-  scale = 720;
 }
 
 void addPhotos() {
@@ -157,7 +156,6 @@ void addPhotos() {
       images.add(i);
     }
   } 
-  imageCounter = 0;
   // println(images);
 }
 
@@ -167,6 +165,8 @@ void timer() {
   if (currentTime - startingTime >= 300000) {
     loadData(); 
     startingTime = millis();
+    x = 620;
+    imageCounter = 0;
   } else {
     // println("no reload yet");
   }
@@ -212,6 +212,7 @@ void increaseScale() {
 }
 
 void speak() {
+  println(voiceCounter);
   try {
     Runtime.getRuntime().exec(new String[] {
       "say", voiceover[voiceCounter]

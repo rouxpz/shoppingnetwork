@@ -9,8 +9,6 @@ import glob
 import threading
 
 #to do:
-#1 - extract email address
-#2 - skip posts without photos
 #3 - clean up any lingering HTML in the description
 
 home_path = os.getcwd()
@@ -65,14 +63,14 @@ def getFullDescription(soup):
 
 def getContactInfo(_id):
 	link = "http://newyork.craigslist.org/reply/nyc/for/" + _id
-	opener = urllib2.build_opener()
-	opener.addheaders = [('User-Agent', 'Mozilla/5.0')]
-	contact = opener.open(link)
-	soup = BeautifulSoup(contact, from_encoding="utf-8")
-	opener.close()
+	soup = openPage(link)
 
-	email = soup.a.contents
-	return email[0]
+	try:
+		email = soup.a.contents
+		return email[0]
+	except AttributeError:
+		print "no email"
+		collectEntry()
 
 def collectEntry():
 	os.chdir(home_path)
@@ -88,10 +86,11 @@ def collectEntry():
 	title = unicode.encode(selection.title, "utf-8")
 	link = unicode.encode(selection.link, "utf-8")
 
+	title = title.split("&#x0024;")
+
 	if len(title) == 1:
 		title.append("???")
 
-	title = title.split("&#x0024;")
 	title[0] = title[0].replace('&amp;', '&')
 	# summary = summary.lower()
 
