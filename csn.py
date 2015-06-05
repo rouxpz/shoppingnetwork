@@ -24,16 +24,16 @@ def openPage(url):
 
 def getImages(soup):
 
-	path = 'csn_processing/data/'
-	os.chdir(path)
-	files = glob.glob('*.jpg')
-	for f in files:
-		os.unlink(f)
-
 	counter = 0
 	images = soup.find_all("img")
 
 	if len(images) > 1:
+
+		path = 'csn_processing/data/'
+		os.chdir(path)
+		files = glob.glob('*.jpg')
+		for f in files:
+			os.unlink(f)
 
 		for i in images:
 			if images.index(i) != 1:
@@ -52,9 +52,12 @@ def getImages(soup):
 				opener.close()
 
 				counter += 1
+
+		return len(images)
+
 	else:
 		print "no images found"
-		collectEntry()
+		return 0
 
 def getFullDescription(soup):
 	text = soup.find_all(id="postingbody")
@@ -70,7 +73,7 @@ def getContactInfo(_id):
 		return email[0]
 	except AttributeError:
 		print "no email"
-		collectEntry()
+		return "None"
 
 def collectEntry():
 	os.chdir(home_path)
@@ -103,32 +106,39 @@ def collectEntry():
 
 	print(selection.link)
 	raw = openPage(selection.link)
-	getImages(raw)
+	photos = getImages(raw)
 	summary = getFullDescription(raw)
 
 	print title
 	# print summary
 
-	with open('data.txt', 'wb') as file_:
-		file_.write(title[0])
-		file_.write('\n')
-		file_.write(title[1])
-		file_.write('\n')
-		file_.write(link)
-		file_.write('\n')
-		file_.write(email)
-		file_.write('\n')
-		file_.write(summary)
-		file_.close()
+	if email == "None" or photos == 0:
+		print "starting over"
+		os.chdir(home_path)
+		print os.getcwd()
+		startTimer(120.0)
+	
+	else:
+		with open('data.txt', 'wb') as file_:
+			file_.write(title[0])
+			file_.write('\n')
+			file_.write(title[1])
+			file_.write('\n')
+			file_.write(link)
+			file_.write('\n')
+			file_.write(email)
+			file_.write('\n')
+			file_.write(summary)
+			file_.close()
 
-	os.chdir(home_path)
-	print os.getcwd()
+		os.chdir(home_path)
+		print os.getcwd()
 
-	startTimer()
+		startTimer(300.0)
 
-def startTimer():
+def startTimer(time):
 	print "starting timer..."
-	t = threading.Timer(300.0, collectEntry)
+	t = threading.Timer(time, collectEntry)
 	t.start()
 
 collectEntry()
