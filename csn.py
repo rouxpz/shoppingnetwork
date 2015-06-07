@@ -1,5 +1,6 @@
 import os
 from os import system
+import time
 import feedparser
 from random import randrange
 import urllib2
@@ -53,6 +54,10 @@ def getImages(soup):
 
 				counter += 1
 
+				time.sleep(25)
+
+				print "moving on"
+
 		return len(images)
 
 	else:
@@ -61,7 +66,12 @@ def getImages(soup):
 
 def getFullDescription(soup):
 	text = soup.find_all(id="postingbody")
-	desc = str(text[0]).replace('<section id="postingbody">', '').replace('</section>', '').replace('<br/>', '').replace('"', ' inches').replace('&amp;', '&')
+	desc = str(text[0]).replace('<section id="postingbody">', '').replace('</section>', '').replace('<br/>', '').replace('<br>', '').replace('"', ' inches').replace('&amp;', '&')
+	contactLink = re.findall(r'<a(.*)a>', desc)
+
+	if len(contactLink) > 0:
+		desc = desc.replace(contactLink[0], '').replace('<a', '').replace('a>', '')
+
 	return desc
 
 def getContactInfo(_id):
@@ -116,7 +126,7 @@ def collectEntry():
 		print "starting over"
 		os.chdir(home_path)
 		print os.getcwd()
-		startTimer(120.0)
+		startTimer(45.0)
 	
 	else:
 		with open('data.txt', 'wb') as file_:
@@ -134,7 +144,7 @@ def collectEntry():
 		os.chdir(home_path)
 		print os.getcwd()
 
-		startTimer(300.0)
+		startTimer(120.0)
 
 def startTimer(time):
 	print "starting timer..."
