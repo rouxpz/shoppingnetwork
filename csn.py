@@ -1,6 +1,7 @@
 import os
 from os import system
 import time
+import shutil
 import feedparser
 from random import randrange
 import urllib2
@@ -30,7 +31,7 @@ def getImages(soup):
 
 	if len(images) > 1:
 
-		path = 'csn_processing/data/'
+		path = 'csn_processing/tempStorage/'
 		os.chdir(path)
 		files = glob.glob('*.jpg')
 		for f in files:
@@ -54,7 +55,7 @@ def getImages(soup):
 
 				counter += 1
 
-				time.sleep(25)
+				time.sleep(15)
 
 				print "moving on"
 
@@ -63,6 +64,8 @@ def getImages(soup):
 	else:
 		print "no images found"
 		return 0
+
+	os.chdir(home_path)
 
 def getFullDescription(soup):
 	text = soup.find_all(id="postingbody")
@@ -86,6 +89,7 @@ def getContactInfo(_id):
 		return "None"
 
 def collectEntry():
+
 	os.chdir(home_path)
 	print os.getcwd()
 
@@ -126,9 +130,26 @@ def collectEntry():
 		print "starting over"
 		os.chdir(home_path)
 		print os.getcwd()
-		startTimer(45.0)
+		startTimer(30.0)
 	
 	else:
+
+		tempPath = home_path + '/csn_processing/tempStorage/'
+		realPath = home_path + '/csn_processing/data/'
+
+		os.chdir(realPath)
+		oldFiles = glob.glob('*.jpg')
+		for o in oldFiles:
+			os.unlink(o)
+
+		os.chdir(tempPath)
+
+		files = glob.glob('*.jpg')
+
+		for f in files:
+			shutil.copy2(f, realPath + f)
+		
+		os.chdir(realPath)
 		with open('data.txt', 'wb') as file_:
 			file_.write(title[0])
 			file_.write('\n')
@@ -144,7 +165,7 @@ def collectEntry():
 		os.chdir(home_path)
 		print os.getcwd()
 
-		startTimer(120.0)
+		startTimer(180.0)
 
 def startTimer(time):
 	print "starting timer..."
