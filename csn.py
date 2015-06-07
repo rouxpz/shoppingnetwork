@@ -118,54 +118,61 @@ def collectEntry():
 	email = getContactInfo(_id)
 	print email
 
-	print(selection.link)
-	raw = openPage(selection.link)
-	photos = getImages(raw)
-	summary = getFullDescription(raw)
-
-	print title
-	# print summary
-
-	if email == "None" or photos == 0:
+	if email == "None":
 		print "starting over"
 		os.chdir(home_path)
 		print os.getcwd()
 		startTimer(30.0)
-	
+
 	else:
+		print(selection.link)
+		raw = openPage(selection.link)
+		photos = getImages(raw)
+		summary = getFullDescription(raw)
 
-		tempPath = home_path + '/csn_processing/tempStorage/'
-		realPath = home_path + '/csn_processing/data/'
+		print title
+		# print summary
 
-		os.chdir(realPath)
-		oldFiles = glob.glob('*.jpg')
-		for o in oldFiles:
-			os.unlink(o)
-
-		os.chdir(tempPath)
-
-		files = glob.glob('*.jpg')
-
-		for f in files:
-			shutil.copy2(f, realPath + f)
+		if photos == 0:
+			print "starting over"
+			os.chdir(home_path)
+			print os.getcwd()
+			startTimer(30.0)
 		
-		os.chdir(realPath)
-		with open('data.txt', 'wb') as file_:
-			file_.write(title[0])
-			file_.write('\n')
-			file_.write(title[1])
-			file_.write('\n')
-			file_.write(link)
-			file_.write('\n')
-			file_.write(email)
-			file_.write('\n')
-			file_.write(summary)
-			file_.close()
+		else:
 
-		os.chdir(home_path)
-		print os.getcwd()
+			tempPath = home_path + '/csn_processing/tempStorage/'
+			realPath = home_path + '/csn_processing/data/'
 
-		startTimer(180.0)
+			os.chdir(realPath)
+			oldFiles = glob.glob('*.jpg')
+			for o in oldFiles:
+				os.unlink(o)
+
+			os.chdir(tempPath)
+
+			files = glob.glob('*.jpg')
+
+			for f in files:
+				shutil.copy2(f, realPath + f)
+			
+			os.chdir(realPath)
+			with open('data.txt', 'wb') as file_:
+				file_.write(title[0])
+				file_.write('\n')
+				file_.write(title[1])
+				file_.write('\n')
+				file_.write(link)
+				file_.write('\n')
+				file_.write(email)
+				file_.write('\n')
+				file_.write(summary)
+				file_.close()
+
+			os.chdir(home_path)
+			print os.getcwd()
+
+			startTimer(180.0)
 
 def startTimer(time):
 	print "starting timer..."
