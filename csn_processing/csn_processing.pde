@@ -1,12 +1,19 @@
-import processing.sound.*;
+import ddf.minim.spi.*;
+import ddf.minim.signals.*;
+import ddf.minim.*;
+import ddf.minim.analysis.*;
+import ddf.minim.ugens.*;
+import ddf.minim.effects.*;
 import com.temboo.core.*;
 import com.temboo.Library.Twilio.SMSMessages.*;
 import com.temboo.Library.Google.Gmail.*;
 import java.io.IOException;
 
-SoundFile s;
 PImage lower3rd;
 PFont reg, bold;
+
+Minim m;
+AudioPlayer a;
 
 String title, price, link, address, serial;
 String[] emailbody;
@@ -38,7 +45,7 @@ public void init() {
 void setup() {
   size(1280, 720);
   // frame.setAlwaysOnTop(true)
-  // frame.setLocation(1280, 0);
+  // frame.setLocation(0, 0);
 
   //load temboo info and start session
   String[] tembooInfo = loadStrings("temboo-info.txt");
@@ -61,7 +68,6 @@ void setup() {
   bold = createFont("Proxima Nova-Extrabold.otf", 30);
 
   lower3rd = loadImage("strobe-lower3rds.png");
-  s = new SoundFile(this, "elevator02.wav");
 
   voiceover[0] = description;
   voiceover[1] = "Buy this one of a kind piece now";
@@ -73,8 +79,11 @@ void setup() {
 
   totalResponses = getTotalMessages();
   println(totalResponses);
-
-  s.loop();
+  
+  m = new Minim(this);
+  a = m.loadFile("elevator00.wav");
+  a.setGain(-6);
+  a.loop();
 }
 
 void draw() {
@@ -104,7 +113,13 @@ void draw() {
   text(title, 40, 100, 210, 250);
 
   fill(255);
-  textFont(bold, 72);
+  int priceSize;
+  if (price.length() >=4) {
+    priceSize = 60;
+  } else {
+    priceSize = 72;
+  }
+  textFont(bold, priceSize);
   text("$" + price, 50, 450);
 
   fill(100);
@@ -113,32 +128,36 @@ void draw() {
 }
 
 void loadData() {
-  println(images.size());
-  addPhotos();
-
-  println(images.size());
 
   String[] data = loadStrings("data.txt");
-  title = data[0];
-  price = data[1];
-  link = data[2];
-  address = data[3];
-  description = data[5];
 
-  if (data.length > 5) {
-    for (int i = 6; i < data.length; i++) {
-      description = description + " " + data[i];
+  if (data[0].equals(title) == false) {
+
+    println(images.size());
+    addPhotos();
+
+    println(images.size());
+    
+    int itemNumber = round(random(9999));
+    serial = "CSN-" + nf(itemNumber, 4, 0);
+    println("serial number: " + serial);
+    title = data[0];
+    price = data[1];
+    link = data[2];
+    address = data[3];
+    description = data[5];
+
+    if (data.length > 5) {
+      for (int i = 6; i < data.length; i++) {
+        description = description + " " + data[i];
+      }
     }
+    
+    voiceover[0] = description;
   }
-
-  voiceover[0] = description;
 
   // println(title);
   // println(description);
-
-  int itemNumber = round(random(9999));
-  serial = "CSN-" + nf(itemNumber, 4, 0);
-  println("serial number: " + serial);
 }
 
 void addPhotos() {

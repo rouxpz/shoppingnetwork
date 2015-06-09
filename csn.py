@@ -71,9 +71,14 @@ def getFullDescription(soup):
 	text = soup.find_all(id="postingbody")
 	desc = str(text[0]).replace('<section id="postingbody">', '').replace('</section>', '').replace('<br/>', '').replace('<br>', '').replace('"', ' inches').replace('&amp;', '&')
 	contactLink = re.findall(r'<a(.*)a>', desc)
+	ampersand = re.findall(r'&(.*);', desc)
 
 	if len(contactLink) > 0:
 		desc = desc.replace(contactLink[0], '').replace('<a', '').replace('a>', '')
+
+	if len(ampersand) > 0:
+		for a in ampersand:
+			desc = desc.replace(a, '')
 
 	return desc
 
